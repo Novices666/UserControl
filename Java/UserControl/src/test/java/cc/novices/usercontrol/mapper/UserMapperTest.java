@@ -1,7 +1,5 @@
 package cc.novices.usercontrol.mapper;
-import java.util.Date;
 
-import cc.novices.usercontrol.model.domain.User;
 import cc.novices.usercontrol.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -9,56 +9,62 @@ import java.util.Date;
 import lombok.Data;
 
 /**
- * 
+ *
  * @TableName user
  */
 @TableName(value ="user")
 @Data
 public class User implements Serializable {
     /**
-     * 
+     *
      */
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     /**
-     * 
-     */
-    @TableField(value = "username")
-    private String username;
-
-    /**
-     * 
+     *
      */
     @TableField(value = "userAccount")
     private String useraccount;
 
     /**
-     * 
-     */
-    @TableField(value = "avatarUrl")
-    private String avatarurl;
-
-    /**
-     * 
-     */
-    @TableField(value = "gender")
-    private Integer gender;
-
-    /**
-     * 
+     *
      */
     @TableField(value = "userPassword")
     private String userpassword;
 
     /**
-     * 
+     * 用户类型 0 - 普通用户 1 - 管理员
+     */
+    @TableField(value = "userType")
+    private Integer usertype;
+
+    /**
+     *
+     */
+    @TableField(value = "username")
+    private String username;
+
+    /**
+     *
+     */
+    @TableField(value = "avatarUrl")
+    private String avatarurl;
+
+    /**
+     *
+     */
+    @TableField(value = "gender")
+    private Integer gender;
+
+    /**
+     *
      */
     @TableField(value = "phone")
     private String phone;
 
     /**
-     * 
+     *
      */
     @TableField(value = "email")
     private String email;
@@ -70,19 +76,19 @@ public class User implements Serializable {
     private Integer userstatus;
 
     /**
-     * 
+     *
      */
     @TableField(value = "createTime")
     private Date createtime;
 
     /**
-     * 
+     *
      */
     @TableField(value = "updateTime")
     private Date updatetime;
 
     /**
-     * 
+     *
      */
     @TableField(value = "isDelete")
     private Integer isdelete;

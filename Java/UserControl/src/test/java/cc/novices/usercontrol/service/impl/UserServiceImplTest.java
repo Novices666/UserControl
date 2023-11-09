@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -52,5 +53,12 @@ class UserServiceImplTest {
         result = userService.userRegister(userAccount, userPassword, chackPassword);
         assertEquals(-1,result);
 
+    }
+
+    @Test
+    void userLogin() {
+        String userAccount = "novices";
+        String userPassword = "123456";
+        userService.userLogin(userAccount,userPassword,null);
     }
 }
