@@ -6,18 +6,18 @@
 
     <resultMap id="BaseResultMap" type="cc.novices.usercontrol.model.domain.User">
             <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="useraccount" column="userAccount" jdbcType="VARCHAR"/>
-            <result property="userpassword" column="userPassword" jdbcType="VARCHAR"/>
-            <result property="usertype" column="userType" jdbcType="INTEGER"/>
+            <result property="userAccount" column="userAccount" jdbcType="VARCHAR"/>
+            <result property="userPassword" column="userPassword" jdbcType="VARCHAR"/>
+            <result property="userType" column="userType" jdbcType="INTEGER"/>
             <result property="username" column="username" jdbcType="VARCHAR"/>
-            <result property="avatarurl" column="avatarUrl" jdbcType="VARCHAR"/>
+            <result property="avatarUrl" column="avatarUrl" jdbcType="VARCHAR"/>
             <result property="gender" column="gender" jdbcType="TINYINT"/>
             <result property="phone" column="phone" jdbcType="VARCHAR"/>
             <result property="email" column="email" jdbcType="VARCHAR"/>
-            <result property="userstatus" column="userStatus" jdbcType="INTEGER"/>
-            <result property="createtime" column="createTime" jdbcType="TIMESTAMP"/>
-            <result property="updatetime" column="updateTime" jdbcType="TIMESTAMP"/>
-            <result property="isdelete" column="isDelete" jdbcType="TINYINT"/>
+            <result property="userStatus" column="userStatus" jdbcType="INTEGER"/>
+            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">

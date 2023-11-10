@@ -67,8 +67,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
         //3.插入数据库
         User user = new User();
-        user.setUseraccount(userAccount);
-        user.setUserpassword(encryptPassword);
+        user.setUserAccount(userAccount);
+        user.setUserPassword(encryptPassword);
         if (!this.save(user)) {
             return -1;
         }
@@ -113,17 +113,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             return null;
         }
         //4.脱敏
-        User safetyUser = new User();
-        safetyUser.setId(user.getId());
-        safetyUser.setUsername(user.getUsername());
-        safetyUser.setUseraccount(user.getUseraccount());
-        safetyUser.setAvatarurl(user.getAvatarurl());
-        safetyUser.setGender(user.getGender());
-        safetyUser.setPhone(user.getPhone());
-        safetyUser.setEmail(user.getEmail());
-        safetyUser.setUsertype(user.getUsertype());
-
+        User safetyUser = getSafetyUser(user);
         request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE,safetyUser);
+        return safetyUser;
+    }
+
+    /**
+     * 用户脱敏
+     * @param oldUser 原始用户信息
+     * @return 脱敏后的用户信息
+     */
+    @Override
+    public User getSafetyUser(User oldUser){
+        User safetyUser = new User();
+        safetyUser.setId(oldUser.getId());
+        safetyUser.setUsername(oldUser.getUsername());
+        safetyUser.setUserAccount(oldUser.getUserAccount());
+        safetyUser.setAvatarUrl(oldUser.getAvatarUrl());
+        safetyUser.setGender(oldUser.getGender());
+        safetyUser.setPhone(oldUser.getPhone());
+        safetyUser.setEmail(oldUser.getEmail());
+        safetyUser.setUserType(oldUser.getUserType());
+        safetyUser.setCreateTime(oldUser.getCreateTime());
         return safetyUser;
     }
 }

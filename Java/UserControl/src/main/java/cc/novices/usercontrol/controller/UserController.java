@@ -14,6 +14,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RequestMapping("/user")
 @RestController
@@ -62,6 +63,20 @@ public class UserController {
         return userService.userLogin(userAccount, userPassword, request);
     }
 
+    @GetMapping("/searchAll")
+    public List<User> searchAll(HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return new ArrayList<>();
+        }
+        List<User> userList = userService.list();
+        // 验证可行性:不可行
+        //userList.forEach(user -> userService.getSafetyUser(user));
+        userList = userList.stream().map(user -> {
+            return userService.getSafetyUser(user);
+        }).collect(Collectors.toList());
+        return userList;
+    }
+
     /**
      * 通过用户名模糊搜索用户  只有管理员可以操作
      * @param username 用户名
@@ -79,11 +94,12 @@ public class UserController {
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.like("username", username);
         List<User> userList = userService.list(wrapper);
-        userList.forEach(user -> user.setUserpassword(null));
-//        userList = userList.stream().map(user -> {
-//            user.setUserpassword(null);
-//            return user;
-//        }).collect(Collectors.toList());
+
+        // 验证可行性:不可行
+        //userList.forEach(user -> userService.getSafetyUser(user));
+        userList = userList.stream().map(user -> {
+            return userService.getSafetyUser(user);
+        }).collect(Collectors.toList());
         return userList;
     }
 
@@ -104,6 +120,21 @@ public class UserController {
         return userService.removeById(userId);
     }
 
+    @GetMapping("/current")
+    public User current(HttpServletRequest request){
+        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        if (userObj == null) {
+            return null;
+        }
+        User user = (User) userObj;
+        long userId = user.getId();
+        User currentUser = userService.getById(userId);
+        if(currentUser == null){
+            return null;
+        }
+        return userService.getSafetyUser(currentUser);
+    }
+
     /**
      * 内部方法，判断当前登录用户是否为管理员
      * @param request 请求
@@ -115,7 +146,7 @@ public class UserController {
             return false;
         }
         User user = (User) userObj;
-        int userType = user.getUsertype();
+        int userType = user.getUserType();
         if (userType == UserConstant.DEFAULT_USER_TYPE) {
             return false;
         }

@@ -23,19 +23,19 @@ public class User implements Serializable {
      *
      */
     @TableField(value = "userAccount")
-    private String useraccount;
+    private String userAccount;
 
     /**
      *
      */
     @TableField(value = "userPassword")
-    private String userpassword;
+    private String userPassword;
 
     /**
      * 用户类型 0 - 普通用户 1 - 管理员
      */
     @TableField(value = "userType")
-    private Integer usertype;
+    private Integer userType;
 
     /**
      *
@@ -47,7 +47,7 @@ public class User implements Serializable {
      *
      */
     @TableField(value = "avatarUrl")
-    private String avatarurl;
+    private String avatarUrl;
 
     /**
      *
@@ -71,26 +71,26 @@ public class User implements Serializable {
      * 0正常
      */
     @TableField(value = "userStatus")
-    private Integer userstatus;
+    private Integer userStatus;
 
     /**
      *
      */
     @TableField(value = "createTime")
-    private Date createtime;
+    private Date createTime;
 
     /**
      *
      */
     @TableField(value = "updateTime")
-    private Date updatetime;
+    private Date updateTime;
 
     /**
      *
      */
     @TableLogic
     @TableField(value = "isDelete")
-    private Integer isdelete;
+    private Integer isDelete;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
