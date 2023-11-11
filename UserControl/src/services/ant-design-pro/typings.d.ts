@@ -15,6 +15,12 @@ declare namespace API {
     createTime: Date;
     updateTime: Date;
   };
+  type BaseResponse<T> = {
+    code:number;
+    data:T;
+    msg:string;
+    description:string;
+  };
 
   type LoginResult = {
     status?: string;

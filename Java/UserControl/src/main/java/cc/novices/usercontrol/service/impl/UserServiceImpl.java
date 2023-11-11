@@ -1,5 +1,7 @@
 package cc.novices.usercontrol.service.impl;
 
+import cc.novices.usercontrol.commons.BusinessException;
+import cc.novices.usercontrol.commons.ResultEnum;
 import cc.novices.usercontrol.constant.UserConstant;
 import cc.novices.usercontrol.mapper.UserMapper;
 import cc.novices.usercontrol.model.domain.User;
@@ -15,7 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.regex.Pattern;
 
 /**
- * @author 16014
+ * @author Novices
  * @description 针对表【user】的数据库操作Service实现
  * @createDate 2023-11-08 10:53:50
  */
@@ -39,28 +41,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public long userRegister(String userAccount, String userPassword, String chackPassword) {
         //1.校验前端传入数据
         if (StringUtils.isAnyBlank(userAccount, userPassword, chackPassword)) {//非空校验
-            return -1;
+            throw new BusinessException(ResultEnum.ERROR_PARAMS,"注册账号、密码或确认密码为空");
         }
         if (userAccount.length() < 4) {
-            return -1;
+            throw new BusinessException(ResultEnum.ERROR_PARAMS,"注册账号长度过短");
         }
         if (userPassword.length() < 8 || chackPassword.length() < 8) {
-            return -1;
+            throw new BusinessException(ResultEnum.ERROR_PARAMS,"密码长度过短");
         }
 
         final String REGSTR = "\\pP|\\pS|\\s+";
         Pattern compile = Pattern.compile(REGSTR);
         if (compile.matcher(userAccount).find()) {
-            return -1;
+            throw new BusinessException(ResultEnum.ERROR_PARAMS,"注册账号存在非法字符");
         }
         if (!userPassword.equals(chackPassword)) {
-            return -1;
+            throw new BusinessException(ResultEnum.ERROR_PARAMS,"密码与确认密码不匹配");
         }
 
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userAccount", userAccount);
         if (userMapper.selectCount(queryWrapper) > 0) {
-            return -1;
+            throw new BusinessException(ResultEnum.ERROR_PARAMS,"当前注册账号已存在");
         }
 
         //2.加密密码
@@ -70,7 +72,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setUserAccount(userAccount);
         user.setUserPassword(encryptPassword);
         if (!this.save(user)) {
-            return -1;
+            throw new BusinessException(ResultEnum.ERROR_PARAMS,"注册遇到未知错误");
         }
         return user.getId();
     }
@@ -86,19 +88,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         //1.校验前端传入数据
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {//非空校验
-            return null;
+            throw new BusinessException(ResultEnum.ERROR_PARAMS,"账号或密码为空");
         }
         if (userAccount.length() < 4) {
-            return null;
+            throw new BusinessException(ResultEnum.ERROR_PARAMS,"登录账号长度过短");
         }
         if (userPassword.length() < 8) {
-            return null;
+            throw new BusinessException(ResultEnum.ERROR_PARAMS,"密码长度过短");
         }
 
         final String REGSTR = "\\pP|\\pS|\\s+";
         Pattern compile = Pattern.compile(REGSTR);
         if (compile.matcher(userAccount).find()) {
-            return null;
+            throw new BusinessException(ResultEnum.ERROR_PARAMS,"账号存在非法字符");
         }
 
         //2.加密密码
@@ -110,7 +112,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.eq("userPassword", encryptPassword);
         User user = userMapper.selectOne(queryWrapper);
         if (user == null) {
-            return null;
+            throw new BusinessException(ResultEnum.ERROR_PARAMS,"账号或密码错误");
         }
         //4.脱敏
         User safetyUser = getSafetyUser(user);

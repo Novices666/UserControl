@@ -1,5 +1,8 @@
 package cc.novices.usercontrol.controller;
 
+import cc.novices.usercontrol.commons.BusinessException;
+import cc.novices.usercontrol.commons.Result;
+import cc.novices.usercontrol.commons.ResultEnum;
 import cc.novices.usercontrol.constant.UserConstant;
 import cc.novices.usercontrol.model.domain.User;
 import cc.novices.usercontrol.model.domain.request.UserLoginRequest;
@@ -12,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,22 +27,24 @@ public class UserController {
 
     /**
      * 用户注册
+     *
      * @param userRegisterRequest 用户注册需要的参数封装Request
      * @return 成功返回ID，失败返回null/-1
      */
     @PostMapping("/register")
-    public Long userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
+    public Result userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
         if (userRegisterRequest == null) {
-            return null;
+            throw new BusinessException(ResultEnum.ERROR_PARAMS,"注册账号、密码或确认密码为空");
         }
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
         String chackPassword = userRegisterRequest.getChackPassword();
 
         if (StringUtils.isAnyBlank(userAccount, userPassword, chackPassword)) {
-            return null;
+            throw new BusinessException(ResultEnum.ERROR_PARAMS,"注册账号、密码或确认密码为空");
         }
-        return userService.userRegister(userAccount, userPassword, chackPassword);
+        long userId = userService.userRegister(userAccount, userPassword, chackPassword);
+        return new Result<>().ok(userId,"注册成功");
     }
 
     /**
@@ -50,23 +54,30 @@ public class UserController {
      * @return 成功返回脱敏后的登录对象，失败返回null
      */
     @PostMapping("/login")
-    public User userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+    public Result userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         if (userLoginRequest == null) {
-            return null;
+            throw new BusinessException(ResultEnum.ERROR_PARAMS,"账号或密码为空");
         }
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
 
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            return null;
+            throw new BusinessException(ResultEnum.ERROR_PARAMS,"账号或密码为空");
         }
-        return userService.userLogin(userAccount, userPassword, request);
+        User user = userService.userLogin(userAccount, userPassword, request);
+        return new Result<>().ok(user,"登录成功");
+    }
+
+    @PostMapping("/outLogin")
+    public Result userOutLogin(HttpServletRequest request) {
+        request.getSession().removeAttribute(UserConstant.USER_LOGIN_STATE);
+        return new Result<>().ok("退出登录成功");
     }
 
     @GetMapping("/searchAll")
-    public List<User> searchAll(HttpServletRequest request) {
+    public Result searchAll(HttpServletRequest request) {
         if (!isAdmin(request)) {
-            return new ArrayList<>();
+            throw new BusinessException(ResultEnum.NO_ACCESS);
         }
         List<User> userList = userService.list();
         // 验证可行性:不可行
@@ -74,7 +85,7 @@ public class UserController {
         userList = userList.stream().map(user -> {
             return userService.getSafetyUser(user);
         }).collect(Collectors.toList());
-        return userList;
+        return new Result<>().ok(userList);
     }
 
     /**
@@ -84,12 +95,12 @@ public class UserController {
      * @return 用户列表
      */
     @GetMapping("/search")
-    public List<User> searchByUsername(String username, HttpServletRequest request) {
+    public Result searchByUsername(String username, HttpServletRequest request) {
         if (username == null) {
-            return new ArrayList<>();
+            throw new BusinessException(ResultEnum.ERROR_PARAMS);
         }
         if (!isAdmin(request)) {
-            return new ArrayList<>();
+            throw new BusinessException(ResultEnum.NO_ACCESS);
         }
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.like("username", username);
@@ -100,7 +111,7 @@ public class UserController {
         userList = userList.stream().map(user -> {
             return userService.getSafetyUser(user);
         }).collect(Collectors.toList());
-        return userList;
+        return new Result<>().ok(userList);
     }
 
     /**
@@ -110,30 +121,37 @@ public class UserController {
      * @return 成功返回true，失败返回false
      */
     @GetMapping("/delete")
-    public boolean deleteByID(long userId, HttpServletRequest request) {
+    public Result deleteByID(long userId, HttpServletRequest request) {
         if (userId <= 0) {
-            return false;
+            throw new BusinessException(ResultEnum.ERROR_PARAMS);
         }
         if (!isAdmin(request)) {
-            return false;
+            throw new BusinessException(ResultEnum.NO_ACCESS);
         }
-        return userService.removeById(userId);
+        boolean reslut = userService.removeById(userId);
+        if(!reslut){
+            throw new BusinessException(ResultEnum.ERROR_PARAMS,"用户不存在");
+        }
+        return new Result<>().ok("删除成功");
     }
 
     @GetMapping("/current")
-    public User current(HttpServletRequest request){
+    public Result current(HttpServletRequest request){
         Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         if (userObj == null) {
-            return null;
+            throw new BusinessException(ResultEnum.NO_LOGIN,"用户未登录，请登录后重试");
         }
         User user = (User) userObj;
         long userId = user.getId();
         User currentUser = userService.getById(userId);
         if(currentUser == null){
-            return null;
+            throw new BusinessException(ResultEnum.ERROR_PARAMS,"用户不存在");
         }
-        return userService.getSafetyUser(currentUser);
+        User safetyUser = userService.getSafetyUser(currentUser);
+        return new Result<>().ok(safetyUser);
     }
+
+
 
     /**
      * 内部方法，判断当前登录用户是否为管理员
@@ -143,7 +161,7 @@ public class UserController {
     private boolean isAdmin(HttpServletRequest request) {
         Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
         if (userObj == null) {
-            return false;
+            throw new BusinessException(ResultEnum.NO_LOGIN,"用户未登录，请登录后重试");
         }
         User user = (User) userObj;
         int userType = user.getUserType();
