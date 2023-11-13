@@ -1,0 +1,39 @@
+│  package.json		#项目依赖及启动器
+│      
+├─config
+│      config.dev.ts		#开发时配置
+│      config.ts		#通用配置
+│      defaultSettings.ts		#默认主题配置
+│      proxy.ts		#代理配置
+│      routes.ts		#路由配置
+│
+├─mock		#前端模拟数据
+│          
+├─public
+│          
+└─src
+    │  access.ts		#权限管理
+    │  app.tsx		#初始化及入口
+    │  global.less
+    │  global.tsx		
+    │  manifest.json		#主要信息配置文件
+    │  service-worker.js
+    │  typings.d.ts
+    ├─components		#组件文件
+    │          
+    ├─constant		#常量文件
+    │      
+    ├─e2e
+    │      baseLayout.e2e.spec.ts
+    │      
+    ├─pages		#页面文件
+    │              
+    ├─plugins		#插件
+    │      requestHandler.ts		#全局响应处理文件
+    │      
+    └─services
+        └─ant-design-pro
+                api.ts		#接口文件
+                index.ts
+                login.ts
+                typings.d.ts		#类型管理文件

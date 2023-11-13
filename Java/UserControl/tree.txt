@@ -1,0 +1,46 @@
+│ pom.xml		#项目依赖配置文件
+├─sql
+│      install.sql	 #数据库初始化
+├─src
+   ├─main
+      ├─java
+      │  └─cc
+      │      └─novices
+      │          └─usercontrol
+      │              │  UserControlApplication.java		#项目入口
+      │              │  
+      │              ├─commons
+      │              │      BusinessException.java		#自定义异常类
+      │              │      GlobalExceptionHandler.java		#全局异常处理器
+      │              │      Result.java		#统一返回类
+      │              │      ResultEnum.java		#统一返回类型枚举
+      │              │      
+      │              ├─constant
+      │              │      UserConstant.java		#常量
+      │              │      
+      │              ├─controller
+      │              │      UserController.java
+      │              │      
+      │              ├─mapper
+      │              │      UserMapper.java		
+      │              │      
+      │              ├─model
+      │              │  └─domain
+      │              │      │  User.java		#数据库实体类
+      │              │      │  
+      │              │      └─request
+      │              │              UserLoginRequest.java		#登录所需参数实体类
+      │              │              UserRegisterRequest.java		#注册所需参数实体类
+      │              │              
+      │              ├─service
+      │              │  │  UserService.java
+      │              │  │  
+      │              │  └─impl
+      │              │          UserServiceImpl.java
+      │              │          
+      │              └─utils
+      └─resources
+          │  application.yml		#项目配置
+          │  
+          └─mapper
+                  UserMapper.xml
