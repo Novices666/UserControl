@@ -16,7 +16,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public Result businessExceptionHandler(BusinessException e){
         log.info(e.getMessage());
-        e.printStackTrace();
+        System.out.println(e.getMessage());;
         return new Result<>().fail(e);
     }
 

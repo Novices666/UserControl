@@ -22,12 +22,14 @@ public class BusinessException extends RuntimeException implements Serializable 
 
     public BusinessException(ResultEnum resultEnum, String description) {
         super(resultEnum.getMsg());
+        this.msg = resultEnum.getMsg();
         this.code = resultEnum.getCode();
         this.description = description;
     }
 
     public BusinessException(ResultEnum resultEnum) {
         super(resultEnum.getMsg());
+        this.msg = resultEnum.getMsg();
         this.code = resultEnum.getCode();
     }
 }

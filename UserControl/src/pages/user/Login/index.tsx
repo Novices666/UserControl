@@ -21,7 +21,7 @@ const LoginMessage: React.FC<{
   />
 );
 const Login: React.FC = () => {
-  const [userLoginState] = useState<API.LoginResult>({});
+  const [userLoginState,setUserLoginState] = useState<API.LoginResult>({});
   const [type, setType] = useState<string>('account');
   const {initialState, setInitialState} = useModel('@@initialState');
   const fetchUserInfo = async () => {
@@ -54,6 +54,7 @@ const Login: React.FC = () => {
         return;
       }
       console.log(user);
+      setUserLoginState(user);
     } catch (error) {
       const defaultLoginFailureMessage = '登录失败，请重试！';
       message.error(defaultLoginFailureMessage);

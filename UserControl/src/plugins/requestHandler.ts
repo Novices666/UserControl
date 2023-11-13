@@ -24,9 +24,7 @@ request.interceptors.request.use((url, options): any => {
     url,
     options: {
       ...options,
-      headers: {
-
-      },
+      headers: {},
     },
   };
 });
@@ -39,7 +37,7 @@ request.interceptors.response.use(async (response, options): Promise<any> => {
 
   const res = await response.clone().json();
   // console.log(data)
-  if(res.code == 40100){
+  if (res.code == 40100) {
     history.replace({
       pathname: '/user/login',
       search: stringify({
@@ -48,11 +46,19 @@ request.interceptors.response.use(async (response, options): Promise<any> => {
     });
   }
 
-  if(res.code == 20000){
+
+  if (res.code == 20000) {
     return res.data;
-  }else{
+  } else {
     message.error(res.description);
-    return ;
+    if (history.location.pathname.indexOf('login') > -1) {
+      const {query} = history.location;
+      history.push({
+        pathname: '/user/login',
+        query
+      });
+    }
+    return;
   }
   return res.data;
 });

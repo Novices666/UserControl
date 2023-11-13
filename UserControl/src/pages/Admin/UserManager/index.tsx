@@ -1,6 +1,5 @@
-import type {ActionType, ProColumns} from '@ant-design/pro-components';
+import type {ProColumns} from '@ant-design/pro-components';
 import {ProTable, TableDropdown} from '@ant-design/pro-components';
-import {useRef} from 'react';
 import {searchAll} from "@/services/ant-design-pro/api";
 
 
