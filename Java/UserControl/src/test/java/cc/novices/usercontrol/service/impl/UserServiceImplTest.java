@@ -1,11 +1,16 @@
 package cc.novices.usercontrol.service.impl;
 
+import cc.novices.usercontrol.model.domain.User;
 import cc.novices.usercontrol.service.UserService;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -60,5 +65,12 @@ class UserServiceImplTest {
         String userAccount = "novices";
         String userPassword = "123456";
         userService.userLogin(userAccount,userPassword,null);
+    }
+
+    @Test
+    void testSearchUserByTagsName_AND(){
+        List<String> list = Arrays.asList("java","python","C++");
+        List<User> userList = userService.searchUserByTagsName_AND(list);
+        assertEquals(1,userList.size());
     }
 }

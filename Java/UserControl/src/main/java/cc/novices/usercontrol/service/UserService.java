@@ -4,6 +4,7 @@ import cc.novices.usercontrol.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
 * @author 16014
@@ -14,6 +15,11 @@ public interface UserService extends IService<User> {
     long userRegister(String userAccount,String userPassword,String chackPassword);
 
     User userLogin(String userAccount, String userPassword, HttpServletRequest request);
+
+
+//    List<User> searchUserByTagsName_OR();
+
+    List<User> searchUserByTagsName_AND(List<String> tagList);
 
     User getSafetyUser(User oldUser);
 }

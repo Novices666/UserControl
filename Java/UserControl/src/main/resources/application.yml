@@ -1,7 +1,7 @@
 spring:
   profiles:
     #激活开发环境
-    active: prod
+    active: dev
 server:
   servlet:
     context-path: /api
