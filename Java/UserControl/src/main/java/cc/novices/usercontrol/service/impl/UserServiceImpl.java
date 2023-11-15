@@ -11,12 +11,16 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.annotations.Options;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.swing.text.html.Option;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -140,12 +144,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         Gson gson = new Gson();
         return userList.stream().filter(user -> {
             String userTags = user.getTags();
-            if (StringUtils.isBlank(userTags)) {
-                return false;
-            }
+//            if (StringUtils.isBlank(userTags)) {
+//                return false;
+//            }
             Set<String> userTagSet = gson.fromJson(userTags, new TypeToken<Set<String>>() {
             }.getType());
-            for (String tagName : userTagSet) {
+            //替换if，如果不为空，返回本身，如果为空返回orElse中的值
+            userTagSet = Optional.ofNullable(userTagSet).orElse(new HashSet<>());
+            for (String tagName : tagList) {
                 if (!userTagSet.contains(tagName)) {
                     return false;
                 }
