@@ -1,7 +1,7 @@
 spring:
   profiles:
-    #激活开发环境
-    active: dev
+    #激活指定环境   dev - 开发环境  prod - 生产环境
+    active: prod
 server:
   servlet:
     context-path: /api
@@ -24,6 +24,22 @@ spring:
     url: jdbc:mysql://localhost:3307/novices
 server:
   port: 8080
+knife4j:
+  enable: true
+  openapi:
+    title: "用户管理系统接口文档"
+    description: "用户管理系统接口文档"
+    email: novices666@gmail.com
+    concat: Novices
+    url: https://github.com/Novices666/
+    version: v4.0
+    group:
+      user-control:
+        group-name: 用户管理
+        api-rule: package
+        api-rule-resources:
+          - cc.novices.usercontrol.controller
+
 ---
 #生产环境配置
 spring:
@@ -37,3 +53,5 @@ spring:
     url: jdbc:mysql://localhost:3306/xxxxxxxxxxxx?characterEncoding=utf-8&serverTimezone=UTC&&useSSL=false
 server:
   port: 8081
+knife4j:
+  enable: false
