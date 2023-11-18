@@ -138,6 +138,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 //        }
 //        List<User> userList = userMapper.selectList(queryWrapper);
 //        return userList;
+        if(tagList == null || tagList.size()<1){
+            throw new BusinessException(ResultEnum.ERROR_PARAMS);
+        }
         //1.取回所有用户
         List<User> userList = this.list();
         //2.遍历,查询是否有匹配项
@@ -168,7 +171,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
 
     /**
-     * 用户脱敏
+     * 用户脱敏，内部方法
      *
      * @param oldUser 原始用户信息
      * @return 脱敏后的用户信息

@@ -1,7 +1,13 @@
 spring:
   profiles:
     #激活指定环境   dev - 开发环境  prod - 生产环境
-    active: prod
+    active: dev
+  redis:
+    database: 0
+    host: localhost
+    port: 6379
+  session:
+    store-type: redis
 server:
   servlet:
     context-path: /api

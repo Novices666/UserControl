@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 @RequestMapping("/user")
 @RestController
+@CrossOrigin
 public class UserController {
 
     @Resource
@@ -135,6 +136,11 @@ public class UserController {
         return new Result<>().ok("删除成功");
     }
 
+    /**
+     * 获取当前登录用户，从session中取
+     * @param request 当前请求，包含session
+     * @return 返回实体类
+     */
     @GetMapping("/current")
     public Result current(HttpServletRequest request){
         Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
@@ -152,6 +158,14 @@ public class UserController {
     }
 
 
+    @GetMapping("/search/tags")
+    private Result searchUserByTagsName_AND(@RequestParam(required=false) List<String> tagList){
+        if(tagList == null || tagList.size()<1){
+            throw new BusinessException(ResultEnum.ERROR_PARAMS);
+        }
+        List<User> userList = userService.searchUserByTagsName_AND(tagList);
+        return new Result<>().ok(userList);
+    }
 
     /**
      * 内部方法，判断当前登录用户是否为管理员
