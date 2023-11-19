@@ -21,5 +21,9 @@ public interface UserService extends IService<User> {
 
     List<User> searchUserByTagsName_AND(List<String> tagList);
 
+    User current(HttpServletRequest request);
+
     User getSafetyUser(User oldUser);
+
+    boolean isAdmin(HttpServletRequest request);
 }

@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 @RequestMapping("/user")
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:5173",allowCredentials = "true")
 public class UserController {
 
     @Resource
@@ -77,7 +77,7 @@ public class UserController {
 
     @GetMapping("/searchAll")
     public Result searchAll(HttpServletRequest request) {
-        if (!isAdmin(request)) {
+        if (!userService.isAdmin(request)) {
             throw new BusinessException(ResultEnum.NO_ACCESS);
         }
         List<User> userList = userService.list();
@@ -100,7 +100,7 @@ public class UserController {
         if (username == null) {
             throw new BusinessException(ResultEnum.ERROR_PARAMS);
         }
-        if (!isAdmin(request)) {
+        if (!userService.isAdmin(request)) {
             throw new BusinessException(ResultEnum.NO_ACCESS);
         }
         QueryWrapper<User> wrapper = new QueryWrapper<>();
@@ -126,7 +126,7 @@ public class UserController {
         if (userId <= 0) {
             throw new BusinessException(ResultEnum.ERROR_PARAMS);
         }
-        if (!isAdmin(request)) {
+        if (!userService.isAdmin(request)) {
             throw new BusinessException(ResultEnum.NO_ACCESS);
         }
         boolean reslut = userService.removeById(userId);
@@ -143,17 +143,10 @@ public class UserController {
      */
     @GetMapping("/current")
     public Result current(HttpServletRequest request){
-        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
-        if (userObj == null) {
-            throw new BusinessException(ResultEnum.NO_LOGIN,"用户未登录，请登录后重试");
+        if(request == null){
+            throw new BusinessException(ResultEnum.ERROR_PARAMS);
         }
-        User user = (User) userObj;
-        long userId = user.getId();
-        User currentUser = userService.getById(userId);
-        if(currentUser == null){
-            throw new BusinessException(ResultEnum.ERROR_PARAMS,"用户不存在");
-        }
-        User safetyUser = userService.getSafetyUser(currentUser);
+        User safetyUser = userService.current(request);
         return new Result<>().ok(safetyUser);
     }
 
@@ -167,21 +160,6 @@ public class UserController {
         return new Result<>().ok(userList);
     }
 
-    /**
-     * 内部方法，判断当前登录用户是否为管理员
-     * @param request 请求
-     * @return 是返回true，否则返回false
-     */
-    private boolean isAdmin(HttpServletRequest request) {
-        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
-        if (userObj == null) {
-            throw new BusinessException(ResultEnum.NO_LOGIN,"用户未登录，请登录后重试");
-        }
-        User user = (User) userObj;
-        int userType = user.getUserType();
-        if (userType == UserConstant.DEFAULT_USER_TYPE) {
-            return false;
-        }
-        return true;
-    }
+
+
 }

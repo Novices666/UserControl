@@ -11,17 +11,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.annotations.Options;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.swing.text.html.Option;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -169,6 +164,44 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 //
 //    }
 
+    /**
+     * 获取当前登录用户，从session中取
+     * @param request 当前请求，包含session
+     * @return 返回当前登录用户脱敏信息
+     */
+    @Override
+    public User current(HttpServletRequest request){
+        if(request == null){
+            throw new BusinessException(ResultEnum.ERROR_PARAMS);
+        }
+        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        if (userObj == null) {
+            throw new BusinessException(ResultEnum.NO_LOGIN,"用户未登录，请登录后重试");
+        }
+        User user = (User) userObj;
+        long userId = user.getId();
+        User currentUser = getById(userId);
+        if(currentUser == null){
+            throw new BusinessException(ResultEnum.ERROR_PARAMS,"用户不存在");
+        }
+        return getSafetyUser(currentUser);
+    }
+
+
+    /**
+     * 更新用户信息
+     *
+     * @param oldUser
+     * @param currentUser
+     * @return
+     */
+    private int updateUser(User oldUser, User currentUser){
+        if(oldUser == null || currentUser== null){
+            throw new BusinessException(ResultEnum.ERROR_PARAMS);
+        }
+
+    }
+
 
     /**
      * 用户脱敏，内部方法
@@ -190,6 +223,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         safetyUser.setUserType(oldUser.getUserType());
         safetyUser.setCreateTime(oldUser.getCreateTime());
         return safetyUser;
+    }
+
+
+    /**
+     * 判断当前登录用户是否为管理员
+     * @param request 请求
+     * @return 是返回true，否则返回false
+     */
+    @Override
+    public boolean isAdmin(HttpServletRequest request) {
+        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        if (userObj == null) {
+            throw new BusinessException(ResultEnum.NO_LOGIN,"用户未登录，请登录后重试");
+        }
+        User user = (User) userObj;
+        int userType = user.getUserType();
+        if (userType == UserConstant.DEFAULT_USER_TYPE) {
+            return false;
+        }
+        return true;
     }
 }
 
