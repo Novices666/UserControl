@@ -191,15 +191,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     /**
      * 更新用户信息
      *
-     * @param oldUser
+     * @param user
      * @param currentUser
      * @return
      */
-    private int updateUser(User oldUser, User currentUser){
-        if(oldUser == null || currentUser== null){
+    @Override
+    public int updateUser(User user, User currentUser){
+        if(user == null || currentUser== null){
             throw new BusinessException(ResultEnum.ERROR_PARAMS);
         }
-
+        if(!Objects.equals(user.getId(), currentUser.getId()) || currentUser.getUserType()!=UserConstant.ADMIN_USER_TYPE ){
+            throw new BusinessException(ResultEnum.NO_ACCESS);
+        }
+        return userMapper.updateById(user);
     }
 
 

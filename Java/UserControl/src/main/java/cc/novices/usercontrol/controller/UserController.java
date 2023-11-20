@@ -7,6 +7,7 @@ import cc.novices.usercontrol.constant.UserConstant;
 import cc.novices.usercontrol.model.domain.User;
 import cc.novices.usercontrol.model.domain.request.UserLoginRequest;
 import cc.novices.usercontrol.model.domain.request.UserRegisterRequest;
+import cc.novices.usercontrol.model.dto.UserDTO;
 import cc.novices.usercontrol.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RequestMapping("/user")
@@ -150,6 +152,21 @@ public class UserController {
         return new Result<>().ok(safetyUser);
     }
 
+    @PostMapping("/update")
+    public Result updateUser(@RequestBody User user, HttpServletRequest request){
+        if(user == null || request== null){
+            throw new BusinessException(ResultEnum.ERROR_PARAMS);
+        }
+        User currentUser = userService.current(request);
+        if(!Objects.equals(user.getId(), currentUser.getId()) || currentUser.getUserType()!=UserConstant.ADMIN_USER_TYPE ){
+            throw new BusinessException(ResultEnum.NO_ACCESS);
+        }
+        int result = userService.updateUser(user,currentUser);
+        if(result != 1){
+            throw new BusinessException(ResultEnum.ERROR_PARAMS);
+        }
+        return new Result<>().ok("success");
+    }
 
     @GetMapping("/search/tags")
     private Result searchUserByTagsName_AND(@RequestParam(required=false) List<String> tagList){
