@@ -7,9 +7,9 @@ import cc.novices.usercontrol.constant.UserConstant;
 import cc.novices.usercontrol.model.domain.User;
 import cc.novices.usercontrol.model.domain.request.UserLoginRequest;
 import cc.novices.usercontrol.model.domain.request.UserRegisterRequest;
-import cc.novices.usercontrol.model.dto.UserDTO;
 import cc.novices.usercontrol.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.StringUtils;
 
 import org.springframework.web.bind.annotation.*;
@@ -71,50 +71,52 @@ public class UserController {
         return new Result<>().ok(user,"登录成功");
     }
 
+    /**
+     * 获取当前登录用户，从session中取
+     * @param request 当前请求，包含session
+     * @return 返回实体类
+     */
+    @GetMapping("/current")
+    public Result current(HttpServletRequest request){
+        if(request == null){
+            throw new BusinessException(ResultEnum.ERROR_PARAMS);
+        }
+        User safetyUser = userService.current(request);
+        return new Result<>().ok(safetyUser);
+    }
+
+    /**
+     * 更新用户信息
+     * 用户本身或管理员可调用
+     * @param user 欲修改的用户
+     * @param request 请求信息
+     * @return 返回实体类
+     */
+    @PostMapping("/update")
+    public Result updateUser(@RequestBody User user, HttpServletRequest request){
+        if(user == null || request== null){
+            throw new BusinessException(ResultEnum.ERROR_PARAMS);
+        }
+        User currentUser = userService.current(request);
+        if(!Objects.equals(user.getId(), currentUser.getId()) || currentUser.getUserType()!=UserConstant.ADMIN_USER_TYPE ){
+            throw new BusinessException(ResultEnum.NO_ACCESS);
+        }
+        int result = userService.updateUser(user,currentUser);
+        if(result != 1){
+            throw new BusinessException(ResultEnum.ERROR_PARAMS);
+        }
+        return new Result<>().ok("success");
+    }
+
+    /**
+     * 退出登录
+     * @param request 请求信息，会携带session
+     * @return 返回是否退出成功
+     */
     @PostMapping("/outLogin")
     public Result userOutLogin(HttpServletRequest request) {
         request.getSession().removeAttribute(UserConstant.USER_LOGIN_STATE);
         return new Result<>().ok("退出登录成功");
-    }
-
-    @GetMapping("/searchAll")
-    public Result searchAll(HttpServletRequest request) {
-        if (!userService.isAdmin(request)) {
-            throw new BusinessException(ResultEnum.NO_ACCESS);
-        }
-        List<User> userList = userService.list();
-        // 验证可行性:不可行
-        //userList.forEach(user -> userService.getSafetyUser(user));
-        userList = userList.stream().map(user -> {
-            return userService.getSafetyUser(user);
-        }).collect(Collectors.toList());
-        return new Result<>().ok(userList);
-    }
-
-    /**
-     * 通过用户名模糊搜索用户  只有管理员可以操作
-     * @param username 用户名
-     * @param request 请求
-     * @return 用户列表
-     */
-    @GetMapping("/search")
-    public Result searchByUsername(String username, HttpServletRequest request) {
-        if (username == null) {
-            throw new BusinessException(ResultEnum.ERROR_PARAMS);
-        }
-        if (!userService.isAdmin(request)) {
-            throw new BusinessException(ResultEnum.NO_ACCESS);
-        }
-        QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.like("username", username);
-        List<User> userList = userService.list(wrapper);
-
-        // 验证可行性:不可行
-        //userList.forEach(user -> userService.getSafetyUser(user));
-        userList = userList.stream().map(user -> {
-            return userService.getSafetyUser(user);
-        }).collect(Collectors.toList());
-        return new Result<>().ok(userList);
     }
 
     /**
@@ -139,44 +141,78 @@ public class UserController {
     }
 
     /**
-     * 获取当前登录用户，从session中取
-     * @param request 当前请求，包含session
+     * 获取全部用户
+     * 方法在用户量大的时候会导致内存不足或请求时间过长
+     * @param request 请求信息
      * @return 返回实体类
      */
-    @GetMapping("/current")
-    public Result current(HttpServletRequest request){
-        if(request == null){
-            throw new BusinessException(ResultEnum.ERROR_PARAMS);
-        }
-        User safetyUser = userService.current(request);
-        return new Result<>().ok(safetyUser);
-    }
-
-    @PostMapping("/update")
-    public Result updateUser(@RequestBody User user, HttpServletRequest request){
-        if(user == null || request== null){
-            throw new BusinessException(ResultEnum.ERROR_PARAMS);
-        }
-        User currentUser = userService.current(request);
-        if(!Objects.equals(user.getId(), currentUser.getId()) || currentUser.getUserType()!=UserConstant.ADMIN_USER_TYPE ){
+    @GetMapping("/searchAll")
+    @Deprecated
+    public Result searchAll(HttpServletRequest request,long pageSize,long pageNum) {
+        if (!userService.isAdmin(request)) {
             throw new BusinessException(ResultEnum.NO_ACCESS);
         }
-        int result = userService.updateUser(user,currentUser);
-        if(result != 1){
-            throw new BusinessException(ResultEnum.ERROR_PARAMS);
-        }
-        return new Result<>().ok("success");
+        Page<User> userPage = userService.page(new Page<>(pageNum,pageSize));
+        //List<User> userPage = userService.list();
+        // 验证可行性:不可行
+        //userPage.forEach(user -> userService.getSafetyUser(user));
+        List<User> userList =  userPage.getRecords().stream().map(user -> {
+            return userService.getSafetyUser(user);
+        }).collect(Collectors.toList());
+        return new Result<>().ok(userList);
     }
 
-    @GetMapping("/search/tags")
-    private Result searchUserByTagsName_AND(@RequestParam(required=false) List<String> tagList){
-        if(tagList == null || tagList.size()<1){
+    /**
+     * 通过用户名模糊搜索用户  只有管理员可以操作
+     * @param username 用户名
+     * @param request 请求
+     * @return 用户列表
+     */
+    @GetMapping("/search")
+    public Result searchByUsername(String username, HttpServletRequest request,long pageSize,long pageNum) {
+        if (username == null) {
             throw new BusinessException(ResultEnum.ERROR_PARAMS);
         }
-        List<User> userList = userService.searchUserByTagsName_AND(tagList);
+        if (!userService.isAdmin(request)) {
+            throw new BusinessException(ResultEnum.NO_ACCESS);
+        }
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.like("username", username);
+
+        //List<User> userList = userService.list(wrapper);
+        Page<User> userPage = userService.page(new Page<>(pageNum,pageSize),wrapper);
+        // 验证可行性:不可行
+        //userList.forEach(user -> userService.getSafetyUser(user));
+        List<User> userList =  userPage.getRecords().stream().map(user -> {
+            return userService.getSafetyUser(user);
+        }).collect(Collectors.toList());
         return new Result<>().ok(userList);
     }
 
 
+
+
+
+    @GetMapping("/search/tags")
+    private Result searchUserByTagsName_AND(@RequestParam(required=false) List<String> tagList,long pageSize,long pageNum){
+        if(tagList == null || tagList.size()<1){
+            throw new BusinessException(ResultEnum.ERROR_PARAMS);
+        }
+        List<User> userList = userService.searchUserByTagsName_AND(tagList,pageSize,pageNum);
+        return new Result<>().ok(userList);
+    }
+
+    @GetMapping("/recommend")
+    private Result recommendUsers(HttpServletRequest request,long pageSize,long pageNum){
+        if(request == null){
+            throw new BusinessException(ResultEnum.ERROR_PARAMS);
+        }
+
+        Page<User> userPage = userService.page(new Page<>(pageNum,pageSize));
+        List<User> userList =  userPage.getRecords().stream().map(user -> {
+            return userService.getSafetyUser(user);
+        }).collect(Collectors.toList());
+        return new Result<>().ok(userList);
+    }
 
 }

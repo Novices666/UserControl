@@ -69,8 +69,8 @@ class UserServiceImplTest {
 
     @Test
     void testSearchUserByTagsName_AND(){
-        List<String> list = Arrays.asList("java","python","C++");
-        List<User> userList = userService.searchUserByTagsName_AND(list);
-        assertEquals(1,userList.size());
+        List<String> list = Arrays.asList("java","python");
+        List<User> userList = userService.searchUserByTagsName_AND(list,20,1);
+        assertEquals(2,userList.size());
     }
 }

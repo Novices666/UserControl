@@ -7,6 +7,7 @@ import cc.novices.usercontrol.mapper.UserMapper;
 import cc.novices.usercontrol.model.domain.User;
 import cc.novices.usercontrol.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -125,8 +126,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return safetyUser;
     }
 
+
     @Override
-    public List<User> searchUserByTagsName_AND(List<String> tagList) {
+    public List<User> searchUserByTagsName_AND(List<String> tagList,long pageSize,long pageNum) {
 //        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
 //        for (String tag : tagList){
 //            queryWrapper = queryWrapper.like("tags",tag);
@@ -136,8 +138,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if(tagList == null || tagList.size()<1){
             throw new BusinessException(ResultEnum.ERROR_PARAMS);
         }
+
+
+        Page<User> userPage = this.page(new Page<>(pageNum,pageSize));
         //1.取回所有用户
-        List<User> userList = this.list();
+        List<User> userList = userPage.getRecords();
         //2.遍历,查询是否有匹配项
         Gson gson = new Gson();
         return userList.stream().filter(user -> {

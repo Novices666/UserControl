@@ -19,7 +19,7 @@ public interface UserService extends IService<User> {
 
 //    List<User> searchUserByTagsName_OR();
 
-    List<User> searchUserByTagsName_AND(List<String> tagList);
+    List<User> searchUserByTagsName_AND(List<String> tagList,long pageSize,long pageNum);
 
     User current(HttpServletRequest request);
 
