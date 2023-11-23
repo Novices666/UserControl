@@ -10,23 +10,31 @@ import cc.novices.usercontrol.model.domain.request.UserRegisterRequest;
 import cc.novices.usercontrol.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @RequestMapping("/user")
 @RestController
 @CrossOrigin(origins = "http://localhost:5173",allowCredentials = "true")
+@Slf4j
 public class UserController {
 
     @Resource
     UserService userService;
+
+    @Resource
+    RedisTemplate redisTemplate;
 
     /**
      * 用户注册
@@ -207,11 +215,28 @@ public class UserController {
         if(request == null){
             throw new BusinessException(ResultEnum.ERROR_PARAMS);
         }
-
-        Page<User> userPage = userService.page(new Page<>(pageNum,pageSize));
+        User loginUser = userService.current(request);
+        //自定义缓存key，确保与其他项目不冲突，且用户之间互不冲突
+        String redisKey = String.format("gamedating:user:recommend:%s", loginUser.getId());
+        ValueOperations<String,Object> valueOperations = redisTemplate.opsForValue();
+        //如果有缓存，直接读缓存
+        Page<User> userPage= (Page<User>)valueOperations.get(redisKey);
+        if (userPage ==null){
+            //没缓存，读数据库并存入缓存
+            userPage = userService.page(new Page<>(pageNum,pageSize));
+            try {
+                //设置过期时间为86400秒，即一天
+                valueOperations.set(redisKey,userPage,86400, TimeUnit.SECONDS);
+            }catch (Exception e){
+                //如果写入缓存失败，不应当影响返回，所以捕获异常
+                log.error("redis set key error",e);
+            }
+        }
         List<User> userList =  userPage.getRecords().stream().map(user -> {
             return userService.getSafetyUser(user);
         }).collect(Collectors.toList());
+
+
         return new Result<>().ok(userList);
     }
 
